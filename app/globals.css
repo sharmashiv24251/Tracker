@@ -1,26 +1,180 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --background: #f7f7f8;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-hover: #f2f2f4;
+  --border: #e6e6ea;
+  --border-strong: #d8d8de;
+  --foreground: #17171a;
+  --muted: #85858c;
+  --muted-strong: #57575e;
+  --accent: #5c6ce0;
+  --accent-hover: #4c5bd6;
+  --accent-foreground: #ffffff;
+  --accent-soft: #eceeff;
+  --danger: #e5484d;
+  --danger-soft: #fdecec;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --status-todo: #85858c;
+  --status-todo-bg: #f0f0f2;
+  --status-progress: #3d6bf5;
+  --status-progress-bg: #eaf0ff;
+  --status-done: #1a9e6f;
+  --status-done-bg: #e7f8f1;
+  --status-hold: #c8760a;
+  --status-hold-bg: #fdf1e0;
+
+  --shadow-color: 220 20% 40%;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0b0b0d;
+    --surface: #17171a;
+    --surface-raised: #1c1c20;
+    --surface-hover: #212126;
+    --border: #2a2a2f;
+    --border-strong: #38383f;
+    --foreground: #f2f2f4;
+    --muted: #8f8f97;
+    --muted-strong: #b4b4bb;
+    --accent: #7b88ec;
+    --accent-hover: #8d99f0;
+    --accent-foreground: #0b0b0d;
+    --accent-soft: #23264a;
+    --danger: #f2555a;
+    --danger-soft: #3a1f21;
+
+    --status-todo: #9a9aa2;
+    --status-todo-bg: #1f1f24;
+    --status-progress: #6f95ff;
+    --status-progress-bg: #1a2340;
+    --status-done: #3ecf94;
+    --status-done-bg: #103227;
+    --status-hold: #e4a341;
+    --status-hold-bg: #3a2a10;
+
+    --shadow-color: 220 40% 2%;
   }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-strong: var(--muted-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --color-status-todo: var(--status-todo);
+  --color-status-todo-bg: var(--status-todo-bg);
+  --color-status-progress: var(--status-progress);
+  --color-status-progress-bg: var(--status-progress-bg);
+  --color-status-done: var(--status-done);
+  --color-status-done-bg: var(--status-done-bg);
+  --color-status-hold: var(--status-hold);
+  --color-status-hold-bg: var(--status-hold-bg);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
+  --font-heading: var(--font-heading);
+}
+
+* {
+  border-color: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  background-clip: content-box;
+}
+
+.card-shadow {
+  box-shadow:
+    0 1px 2px hsl(var(--shadow-color) / 0.06),
+    0 2px 8px hsl(var(--shadow-color) / 0.06);
+}
+
+.card-shadow-lg {
+  box-shadow:
+    0 4px 16px hsl(var(--shadow-color) / 0.12),
+    0 16px 48px hsl(var(--shadow-color) / 0.16);
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-modal-in {
+  animation: modal-in 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-overlay-in {
+  animation: overlay-in 0.15s ease-out;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.2s ease-out both;
 }
