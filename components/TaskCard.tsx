@@ -2,8 +2,9 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { useMutation } from "convex/react";
 import { FunctionReturnType } from "convex/server";
-import { Paperclip, ListChecks } from "lucide-react";
+import { Paperclip, ListChecks, Trash2 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Avatar } from "./ui/Avatar";
 import { ProjectIcon } from "./ui/ProjectIcon";
@@ -17,9 +18,16 @@ export function TaskCard({
   task: TaskListItem;
   onClick: () => void;
 }) {
+  const removeTask = useMutation(api.tasks.remove);
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task._id,
   });
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    void removeTask({ id: task._id });
+  };
 
   return (
     <div
@@ -72,7 +80,19 @@ export function TaskCard({
             </span>
           )}
         </div>
-        {task.assignee && <Avatar name={task.assignee.name} size="xs" />}
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={handleDelete}
+            onPointerDown={(e) => e.stopPropagation()}
+            title="Delete task"
+            aria-label="Delete task"
+            className="rounded-md p-1 text-muted opacity-0 transition-all hover:bg-danger-soft hover:text-danger group-hover:opacity-100 focus:opacity-100"
+          >
+            <Trash2 size={13} />
+          </button>
+          {task.assignee && <Avatar name={task.assignee.name} size="xs" />}
+        </div>
       </div>
     </div>
   );

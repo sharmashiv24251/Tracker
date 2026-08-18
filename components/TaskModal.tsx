@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { FunctionReturnType } from "convex/server";
-import { CheckSquare, Plus, Square, Trash2, X } from "lucide-react";
+import { CheckSquare, Loader2, Plus, Square, Trash2, UploadCloud, X } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Status } from "@/lib/status";
@@ -173,6 +173,7 @@ function TaskEditor({ taskId, onClose }: { taskId: Id<"tasks">; onClose: () => v
   const [description, setDescription] = useState("");
   const [newSubtask, setNewSubtask] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
@@ -182,6 +183,70 @@ function TaskEditor({ taskId, onClose }: { taskId: Id<"tasks">; onClose: () => v
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?._id]);
+
+  const uploadFiles = useCallback(
+    async (files: File[] | FileList) => {
+      const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/"));
+      if (fileArray.length === 0 || uploading || !data) return;
+      setUploading(true);
+      try {
+        const uploaded = await Promise.all(fileArray.map((f) => uploadImage(f)));
+        await updateTask({
+          id: taskId,
+          attachmentIds: [...(data.attachmentIds ?? []), ...uploaded],
+        });
+      } catch (err) {
+        console.error("Failed to upload image:", err);
+      } finally {
+        setUploading(false);
+      }
+    },
+    [data, taskId, updateTask, uploadImage, uploading],
+  );
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      const imageFiles: File[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) imageFiles.push(file);
+        }
+      }
+      if (imageFiles.length > 0) {
+        e.preventDefault();
+        void uploadFiles(imageFiles);
+      }
+    },
+    [uploadFiles],
+  );
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes("Files")) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      void uploadFiles(e.dataTransfer.files);
+    }
+  };
 
   if (data === undefined) {
     return <div className="p-10 text-center text-[13px] text-muted">Loading…</div>;
@@ -211,20 +276,6 @@ function TaskEditor({ taskId, onClose }: { taskId: Id<"tasks">; onClose: () => v
     }
   };
 
-  const handleFiles = async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    setUploading(true);
-    try {
-      const uploaded = await Promise.all(Array.from(files).map((f) => uploadImage(f)));
-      await updateTask({
-        id: taskId,
-        attachmentIds: [...(data.attachmentIds ?? []), ...uploaded],
-      });
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const removeAttachment = (id: Id<"_storage">) => {
     void updateTask({
       id: taskId,
@@ -240,7 +291,7 @@ function TaskEditor({ taskId, onClose }: { taskId: Id<"tasks">; onClose: () => v
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" onPaste={handlePaste}>
       <div className="space-y-5 p-5">
         <div className="flex items-start justify-between gap-3">
           <input
@@ -289,7 +340,13 @@ function TaskEditor({ taskId, onClose }: { taskId: Id<"tasks">; onClose: () => v
           <div className="mb-2 flex items-center justify-between">
             <span className="text-[12px] font-semibold text-muted-strong">Attachments</span>
             <label className="cursor-pointer text-[12px] font-medium text-accent hover:text-accent-hover">
-              {uploading ? "Uploading…" : "Add photo"}
+              {uploading ? (
+                <span className="inline-flex items-center gap-1">
+                  <Loader2 size={12} className="animate-spin" /> Uploading…
+                </span>
+              ) : (
+                "Add photo"
+              )}
               <input
                 type="file"
                 accept="image/*"
@@ -297,26 +354,27 @@ function TaskEditor({ taskId, onClose }: { taskId: Id<"tasks">; onClose: () => v
                 className="hidden"
                 disabled={uploading}
                 onChange={(e) => {
-                  void handleFiles(e.target.files);
+                  if (e.target.files) void uploadFiles(e.target.files);
                   e.target.value = "";
                 }}
               />
             </label>
           </div>
-          {data.attachments.length > 0 ? (
-            <div className="grid grid-cols-4 gap-2">
+
+          {data.attachments.length > 0 && (
+            <div className="mb-2.5 grid grid-cols-4 gap-2">
               {data.attachments.map(
                 (a) =>
                   a.url && (
                     <div
                       key={a.id}
-                      className="group relative aspect-square overflow-hidden rounded-lg border border-border"
+                      className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-surface-hover"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={a.url} alt="" className="h-full w-full object-cover" />
                       <button
                         onClick={() => removeAttachment(a.id)}
-                        className="absolute right-1 top-1 rounded-md bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                        className="absolute right-1 top-1 rounded-md bg-black/60 p-1 text-white opacity-0 transition-opacity hover:bg-black/80 group-hover:opacity-100"
                         aria-label="Remove attachment"
                       >
                         <X size={12} />
@@ -325,11 +383,44 @@ function TaskEditor({ taskId, onClose }: { taskId: Id<"tasks">; onClose: () => v
                   ),
               )}
             </div>
-          ) : (
-            <div className="rounded-lg border border-dashed border-border py-4 text-center text-[12px] text-muted">
-              No attachments yet
-            </div>
           )}
+
+          <label
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed p-4 text-center transition-all ${
+              isDragOver
+                ? "border-accent bg-accent-soft/40 ring-2 ring-accent/30"
+                : "border-border hover:border-border-strong hover:bg-surface-hover/50"
+            }`}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                if (e.target.files) void uploadFiles(e.target.files);
+                e.target.value = "";
+              }}
+            />
+            {uploading ? (
+              <div className="flex items-center gap-2 text-[12px] font-medium text-accent">
+                <Loader2 size={16} className="animate-spin" />
+                <span>Uploading image…</span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-1.5 text-muted">
+                <UploadCloud size={20} className={isDragOver ? "text-accent" : "text-muted"} />
+                <p className="text-[12px]">
+                  <span className="font-medium text-foreground">Click to upload</span> or drag & drop images
+                </p>
+                <p className="text-[11px] text-muted">Supports clipboard paste (Ctrl+V / ⌘V)</p>
+              </div>
+            )}
+          </label>
         </div>
 
         <div>
