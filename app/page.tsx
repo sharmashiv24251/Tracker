@@ -7,6 +7,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Status } from "@/lib/status";
 import { Header } from "@/components/Header";
 import { Board } from "@/components/Board";
+import { MobileTaskList } from "@/components/MobileTaskList";
 import { TaskModal } from "@/components/TaskModal";
 import { ProjectsModal } from "@/components/ProjectsModal";
 import { PeopleModal } from "@/components/PeopleModal";
@@ -56,13 +57,27 @@ export default function Home() {
         onOpenPeople={() => setPeopleOpen(true)}
       />
 
-      <main className="flex flex-1 flex-col pt-5">
+      <main className="flex flex-1 flex-col pt-3 md:pt-5">
         {tasks === undefined ? (
           <div className="flex flex-1 items-center justify-center text-[13px] text-muted">
             Loading…
           </div>
         ) : (
-          <Board tasks={filteredTasks} onTaskClick={openTask} onAddTask={openNewTask} />
+          <>
+            {/* Desktop View: Full Kanban Board with Drag and Drop */}
+            <div className="hidden md:flex flex-1 flex-col">
+              <Board tasks={filteredTasks} onTaskClick={openTask} onAddTask={openNewTask} />
+            </div>
+
+            {/* Mobile View: Clean filterable list without drag-and-drop conflicts */}
+            <div className="flex md:hidden flex-1 flex-col">
+              <MobileTaskList
+                tasks={filteredTasks}
+                onTaskClick={openTask}
+                onAddTask={openNewTask}
+              />
+            </div>
+          </>
         )}
       </main>
 

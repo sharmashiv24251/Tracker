@@ -130,6 +130,14 @@ body {
     0 2px 8px hsl(var(--shadow-color) / 0.06);
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .card-shadow-lg {
   box-shadow:
     0 4px 16px hsl(var(--shadow-color) / 0.12),

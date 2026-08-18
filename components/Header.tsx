@@ -29,35 +29,38 @@ export function Header({
   const people = useQuery(api.people.list) ?? [];
 
   return (
-    <header className="sticky top-0 z-30 flex flex-col gap-3 border-b border-border bg-background/80 px-6 py-4 backdrop-blur-md">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <h1 className="text-[16px] font-semibold tracking-tight text-foreground font-heading">
+    <header className="sticky top-0 z-30 flex flex-col gap-2.5 sm:gap-3 border-b border-border bg-background/80 px-4 sm:px-6 py-3 sm:py-4 backdrop-blur-md">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 min-w-0">
+          <h1 className="truncate text-[15px] sm:text-[16px] font-semibold tracking-tight text-foreground font-heading">
             who&apos;s working on what?
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={onOpenPeople}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-muted-strong transition-colors hover:bg-surface-hover hover:text-foreground"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2 sm:px-2.5 py-1.5 text-[12px] sm:text-[13px] font-medium text-muted-strong transition-colors hover:bg-surface-hover hover:text-foreground"
           >
-            <Users size={14} /> People
+            <Users size={14} />
+            <span className="hidden sm:inline">People</span>
           </button>
           <button
             onClick={onOpenProjects}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-muted-strong transition-colors hover:bg-surface-hover hover:text-foreground"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2 sm:px-2.5 py-1.5 text-[12px] sm:text-[13px] font-medium text-muted-strong transition-colors hover:bg-surface-hover hover:text-foreground"
           >
-            <FolderKanban size={14} /> Projects
+            <FolderKanban size={14} />
+            <span className="hidden sm:inline">Projects</span>
           </button>
 
-          <Button variant="primary" size="md" onClick={onNewTask}>
-            <Plus size={14} /> New Task
+          <Button variant="primary" size="sm" onClick={onNewTask} className="sm:h-9 sm:px-3.5">
+            <Plus size={14} />
+            <span>Task</span>
           </Button>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 overflow-x-auto">
+      <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar py-0.5">
         <div className="flex items-center -space-x-1.5 shrink-0">
           {people.map((person) => (
             <button
