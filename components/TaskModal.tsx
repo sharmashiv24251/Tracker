@@ -66,9 +66,11 @@ function TaskCreateForm({
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<Status>(defaultStatus);
   const [projectId, setProjectId] = useState<Id<"projects"> | null>(null);
-  const [assigneeId, setAssigneeId] = useState<Id<"people"> | null>(null);
+  const [assigneeId, setAssigneeId] = useState<Id<"people"> | null | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
 
+  const defaultAssignee = people.find((p) => p.name.toLowerCase().includes("shivansh")) ?? null;
+  const effectiveAssigneeId = assigneeId !== undefined ? assigneeId : (defaultAssignee?._id ?? null);
   const effectiveProjectId = projectId ?? projects[0]?._id ?? null;
 
   const submit = async () => {
@@ -81,7 +83,7 @@ function TaskCreateForm({
         description: description.trim() || undefined,
         status,
         projectId: effectiveProjectId,
-        assigneeId: assigneeId ?? undefined,
+        assigneeId: effectiveAssigneeId ?? undefined,
       });
       onCreated(id);
     } finally {
@@ -137,7 +139,7 @@ function TaskCreateForm({
               onChange={setProjectId}
             />
           )}
-          <AssigneePicker people={people as Person[]} value={assigneeId} onChange={setAssigneeId} />
+          <AssigneePicker people={people as Person[]} value={effectiveAssigneeId} onChange={setAssigneeId} />
         </div>
       )}
 

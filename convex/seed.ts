@@ -12,10 +12,18 @@ export const run = internalMutation({
       }
     }
 
-    const existingPeople = await ctx.db.query("people").take(1);
+    const existingPeople = await ctx.db.query("people").collect();
     if (existingPeople.length === 0) {
-      for (const name of ["Shivansh", "Saransh"]) {
+      for (const name of ["Shivansh Sharma", "Saransh Haseeja"]) {
         await ctx.db.insert("people", { name });
+      }
+    } else {
+      for (const person of existingPeople) {
+        if (person.name === "Shivansh") {
+          await ctx.db.patch("people", person._id, { name: "Shivansh Sharma" });
+        } else if (person.name === "Saransh" || person.name === "Saransh Hasija") {
+          await ctx.db.patch("people", person._id, { name: "Saransh Hasija" });
+        }
       }
     }
     return null;
